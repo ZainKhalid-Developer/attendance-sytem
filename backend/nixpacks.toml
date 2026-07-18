@@ -1,0 +1,12 @@
+# Install phase runs npm ci here (NOT in the build phase) so it doesn't collide
+# with Nixpacks' read-only node_modules/.cache mount (EBUSY error).
+# --include=dev ensures TypeScript is present, since Railway installs in
+# production mode by default and would otherwise omit devDependencies.
+[phases.install]
+cmds = ["npm ci --include=dev"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm run start"
