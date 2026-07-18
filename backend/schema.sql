@@ -33,7 +33,8 @@ CREATE TABLE IF NOT EXISTS attendance (
 
 CREATE INDEX IF NOT EXISTS idx_attendance_user_date ON attendance(user_id, date);
 
--- Seed a default allowed location (edit to match your campus/office)
+-- Seed the default allowed location only when the table is empty, so that
+-- re-running this script on every startup doesn't create duplicate rows.
 INSERT INTO allowed_locations (name, latitude, longitude, radius_m)
-VALUES ('University Campus', 31.5204, 74.3587, 100)
-ON CONFLICT DO NOTHING;
+SELECT 'Dublin Business School', 53.3389, -6.2658, 150
+WHERE NOT EXISTS (SELECT 1 FROM allowed_locations);
