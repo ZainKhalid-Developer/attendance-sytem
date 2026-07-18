@@ -20,6 +20,26 @@ import { api } from "../api/client";
 
 type Step = "idle" | "locating" | "capturing" | "submitting" | "success" | "error";
 
+function describeError(err: unknown): string {
+  if (err instanceof Error && err.message) return err.message;
+  // Geolocation failures reject with a GeolocationPositionError (not an Error).
+  if (typeof err === "object" && err !== null) {
+    const e = err as { code?: number; message?: string };
+    if (e.code === 1) {
+      return "Location permission was denied. Allow location access in your browser/device settings and try again.";
+    }
+    if (e.code === 2) {
+      return "Your location is currently unavailable. Check that location services are on.";
+    }
+    if (e.code === 3) {
+      return "Getting your location timed out. Move somewhere with a better signal and try again.";
+    }
+    if (e.message) return e.message;
+  }
+  if (typeof err === "string" && err) return err;
+  return "Something went wrong";
+}
+
 async function resolvePlaceName(lat: number, lon: number): Promise<string | null> {
   try {
     const res = await fetch(
@@ -81,7 +101,7 @@ export default function MarkAttendance() {
       setMessage("Attendance marked successfully.");
     } catch (err) {
       setStep("error");
-      setMessage(err instanceof Error ? err.message : "Something went wrong");
+      setMessage(describeError(err));
     }
   };
 
